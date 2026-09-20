@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Seed &amp; Gene Bank — Match &amp; Save the Harvest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --soil:#5C3A21;
+    --soil-dark:#3E2814;
+    --leaf:#4C7A51;
+    --leaf-dark:#365939;
+    --sprout:#A9CBA5;
+    --paper:#F3EAD3;
+    --paper-dark:#E7D9B7;
+    --harvest:#E3A857;
+    --harvest-dark:#C98A34;
+    --ink:#2A2015;
+    --ink-soft:#5A4B3A;
+    color-scheme: light;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;
+    height:100%;
+    background:var(--paper);
+    font-family:'Inter',system-ui,-apple-system,sans-serif;
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  h1,h2,h3,.display{
+    font-family:'Baloo 2',system-ui,sans-serif;
+  }
+  .screen{
+    min-height:100%;
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:28px 16px;
+  }
+  .hidden{display:none !important;}
+
+  /* -------- background texture: soft dotted soil field -------- */
+  body{
+    background-image:
+      radial-gradient(circle at 12% 22%, rgba(76,122,81,0.10) 0, rgba(76,122,81,0.10) 6px, transparent 7px),
+      radial-gradient(circle at 78% 65%, rgba(92,58,33,0.08) 0, rgba(92,58,33,0.08) 6px, transparent 7px),
+      radial-gradient(circle at 40% 85%, rgba(76,122,81,0.08) 0, rgba(76,122,81,0.08) 5px, transparent 6px),
+      radial-gradient(circle at 88% 12%, rgba(92,58,33,0.07) 0, rgba(92,58,33,0.07) 5px, transparent 6px);
+  }
+
+  /* ============ LANDING: seed-packet card ============ */
+  .packet{
+    width:min(420px, 100%);
+    background:var(--paper);
+    border:3px solid var(--soil);
+    border-radius:14px;
+    padding:0;
+    box-shadow: 6px 6px 0 var(--soil-dark);
+    overflow:hidden;
+  }
+  .packet-top{
+    background:var(--leaf);
+    padding:26px 26px 20px;
+    text-align:center;
+    position:relative;
+    border-bottom:3px dashed var(--paper);
+  }
+  .packet-top .eyebrow-icon{ font-size:34px; display:block; margin-bottom:4px; }
+  .packet-top h1{
+    color:var(--paper);
+    font-size:26px;
+    line-height:1.15;
+    margin:0 0 6px;
+    letter-spacing:0.2px;
+  }
+  .packet-top p{
+    color:var(--sprout);
+    margin:0;
+    font-size:14px;
+    font-weight:600;
+  }
+  .packet-body{
+    padding:24px 26px 28px;
+  }
+  .packet-body p.lead{
+    margin:0 0 18px;
+    font-size:14.5px;
+    color:var(--ink-soft);
+    line-height:1.5;
+  }
+  .field-label{
+    display:block;
+    font-size:13px;
+    font-weight:700;
+    color:var(--soil);
+    margin-bottom:6px;
+  }
+  .code-input{
+    width:100%;
+    font-family:'Baloo 2',sans-serif;
+    font-size:22px;
+    font-weight:700;
+    letter-spacing:2px;
+    text-align:center;
+    text-transform:uppercase;
+    padding:12px 10px;
+    border-radius:10px;
+    border:2.5px solid var(--soil);
+    background:#fff;
+    color:var(--ink);
+    outline:none;
+  }
+  .code-input:focus{ border-color:var(--leaf); box-shadow:0 0 0 3px rgba(76,122,81,0.25); }
+  .hint{
+    font-size:12.5px;
+    color:var(--ink-soft);
+    margin:8px 0 20px;
+  }
+  .btn{
+    display:block;
+    width:100%;
+    border:none;
+    border-radius:10px;
+    padding:14px 18px;
+    font-family:'Baloo 2',sans-serif;
+    font-size:18px;
+    font-weight:700;
+    cursor:pointer;
+    color:var(--ink);
+    background:var(--harvest);
+    box-shadow: 0 4px 0 var(--harvest-dark);
+    transition: transform .05s ease;
+  }
+  .btn:active{ transform:translateY(3px); box-shadow:0 1px 0 var(--harvest-dark); }
+  .btn.secondary{
+    background:transparent;
+    color:var(--leaf-dark);
+    box-shadow:none;
+    font-size:14px;
+    padding:10px;
+    text-decoration:underline;
+    text-underline-offset:3px;
+  }
+  .btn.secondary:active{ transform:none; }
+
+  /* ============ GAME SCREEN ============ */
+  .game-wrap{
+    width:min(560px, 100%);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:16px;
+  }
+  .hud{
+    width:100%;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+  }
+  .tag{
+    background:var(--soil);
+    color:var(--paper);
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:15px;
+    padding:8px 14px;
+    border-radius:8px;
+    white-space:nowrap;
+  }
+  .tag.code-tag{ background:var(--leaf); }
+  .board{
+    width:100%;
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:10px;
+  }
+  .card{
+    aspect-ratio:3/4;
+    position:relative;
+    perspective:800px;
+    cursor:pointer;
+  }
+  .card-inner{
+    position:relative;
+    width:100%;
+    height:100%;
+    transition:transform .45s cubic-bezier(.2,.8,.3,1);
+    transform-style:preserve-3d;
+  }
+  .card.flipped .card-inner, .card.matched .card-inner{
+    transform:rotateY(180deg);
+  }
+  .card-face{
+    position:absolute;
+    inset:0;
+    border-radius:10px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    backface-visibility:hidden;
+    border:2px solid var(--soil);
+  }
+  .card-back{
+    background:
+      repeating-linear-gradient(45deg, rgba(255,255,255,0.06) 0 6px, transparent 6px 12px),
+      var(--soil);
+  }
+  .card-back svg{ width:46%; height:46%; opacity:0.85; }
+  .card-front{
+    background:var(--paper);
+    transform:rotateY(180deg);
+    font-size:clamp(26px, 7vw, 40px);
+  }
+  .card.matched .card-front{
+    background:var(--sprout);
+    border-color:var(--leaf-dark);
+  }
+  .card.matched{ cursor:default; }
+  @keyframes pop{
+    0%{ transform:rotateY(180deg) scale(1); }
+    45%{ transform:rotateY(180deg) scale(1.12); }
+    100%{ transform:rotateY(180deg) scale(1); }
+  }
+  .card.matched .card-inner{ animation:pop .35s ease; }
+
+  /* ============ COUNTDOWN / WIN OVERLAYS ============ */
+  .overlay{
+    position:fixed; inset:0;
+    background:rgba(42,32,21,0.82);
+    display:flex; align-items:center; justify-content:center;
+    z-index:20;
+    padding:16px;
+  }
+  .countdown-num{
+    font-family:'Baloo 2',sans-serif;
+    font-size:96px;
+    font-weight:800;
+    color:var(--harvest);
+  }
+  .win-card{
+    width:min(380px,100%);
+    background:var(--paper);
+    border:3px solid var(--soil);
+    border-radius:14px;
+    padding:28px 26px;
+    text-align:center;
+    box-shadow:6px 6px 0 var(--soil-dark);
+  }
+  .win-card .eyebrow-icon{ font-size:40px; display:block; margin-bottom:6px; }
+  .win-card h2{ margin:0 0 6px; font-size:23px; color:var(--leaf-dark); }
+  .win-card p.sub{ margin:0 0 18px; font-size:13.5px; color:var(--ink-soft); }
+  .stat-row{
+    display:flex; justify-content:center; gap:14px;
+    margin-bottom:20px;
+  }
+  .stat{
+    background:var(--sprout);
+    border-radius:10px;
+    padding:10px 16px;
+    min-width:88px;
+  }
+  .stat .num{ font-family:'Baloo 2',sans-serif; font-weight:700; font-size:22px; color:var(--leaf-dark); }
+  .stat .lbl{ font-size:11.5px; color:var(--ink-soft); font-weight:600; }
+
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#2A2216;
+      --paper-dark:#231C12;
+      --ink:#F3EAD3;
+      --ink-soft:#C9BC9E;
+    }
+    body{ background:var(--paper); }
+    .card-front{ color:var(--ink); }
+    .code-input{ background:#3A3020; color:var(--ink); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= LANDING ================= -->
+<div id="landing" class="screen">
+  <div class="packet">
+    <div class="packet-top">
+      <span class="eyebrow-icon">🌱</span>
+      <h1>Seed &amp; Gene Bank</h1>
+      <p>Match the pairs. Save the harvest.</p>
+    </div>
+    <div class="packet-body">
+      <p class="lead">Flip two cards at a time. Find every matching pair before your friends do — same code, same cards, fair race.</p>
+      <label class="field-label" for="codeInput">Game code</label>
+      <input id="codeInput" class="code-input" maxlength="10" placeholder="YOUR NAME" autocomplete="off">
+      <p class="hint">Four players, four phones, one code. Whoever clears the board first wins.</p>
+      <button class="btn" id="startBtn">Plant &amp; Play</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= GAME ================= -->
+<div id="gameScreen" class="screen hidden">
+  <div class="game-wrap">
+    <div class="hud">
+      <div class="tag code-tag" id="codeTag">CODE</div>
+      <div class="tag" id="timerTag">0:00</div>
+      <div class="tag" id="movesTag">0 moves</div>
+    </div>
+    <div class="board" id="board"></div>
+    <button class="btn secondary" id="backBtn">Change code</button>
+  </div>
+</div>
+
+<!-- ================= COUNTDOWN OVERLAY ================= -->
+<div id="countdownOverlay" class="overlay hidden">
+  <div class="countdown-num" id="countdownNum">3</div>
+</div>
+
+<!-- ================= WIN OVERLAY ================= -->
+<div id="winOverlay" class="overlay hidden">
+  <div class="win-card">
+    <span class="eyebrow-icon">🏆</span>
+    <h2>You saved every seed!</h2>
+    <p class="sub">The gene bank is complete — biodiversity protected.</p>
+    <div class="stat-row">
+      <div class="stat"><div class="num" id="winTime">0:00</div><div class="lbl">time</div></div>
+      <div class="stat"><div class="num" id="winMoves">0</div><div class="lbl">moves</div></div>
+    </div>
+    <button class="btn" id="playAgainBtn">Plant Again</button>
+    <button class="btn secondary" id="newCodeBtn">Use a different code</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var SYMBOLS = ["🌱","🧬","🌾","🥔","🌽","🫘","🧊","🏔️"]; // 8 pairs = 16 cards
+
+  var landing = document.getElementById('landing');
+  var gameScreen = document.getElementById('gameScreen');
+  var board = document.getElementById('board');
+  var codeInput = document.getElementById('codeInput');
+  var codeTag = document.getElementById('codeTag');
+  var timerTag = document.getElementById('timerTag');
+  var movesTag = document.getElementById('movesTag');
+  var countdownOverlay = document.getElementById('countdownOverlay');
+  var countdownNum = document.getElementById('countdownNum');
+  var winOverlay = document.getElementById('winOverlay');
+  var winTime = document.getElementById('winTime');
+  var winMoves = document.getElementById('winMoves');
+
+  var state = {
+    cards: [],
+    firstPick: null,
+    secondPick: null,
+    lock: false,
+    moves: 0,
+    matches: 0,
+    startTime: null,
+    timerInterval: null
+  };
+
+  function hashCode(str){
+    var h = 0;
+    for (var i = 0; i < str.length; i++){
+      h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
+    }
+    return h;
+  }
+
+  function mulberry32(seed){
+    return function(){
+      seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+      var t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function seededShuffle(arr, seed){
+    var rand = mulberry32(seed);
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--){
+      var j = Math.floor(rand() * (i + 1));
+      var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+    }
+    return a;
+  }
+
+  function backSVG(){
+    return '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+      '<path d="M12 21c0-6 4-8 4-13a4 4 0 0 0-8 0c0 5 4 7 4 13z" stroke="#F3EAD3" stroke-width="1.4" stroke-linejoin="round"/>' +
+      '<path d="M12 21V11" stroke="#F3EAD3" stroke-width="1.4"/>' +
+      '</svg>';
+  }
+
+  function buildBoard(code){
+    var seed = hashCode(code.trim().toUpperCase() || "HARVEST");
+    var deck = SYMBOLS.concat(SYMBOLS);
+    deck = seededShuffle(deck, seed);
+
+    board.innerHTML = "";
+    state.cards = [];
+    state.firstPick = null;
+    state.secondPick = null;
+    state.lock = false;
+    state.moves = 0;
+    state.matches = 0;
+    movesTag.textContent = "0 moves";
+
+    deck.forEach(function(symbol, idx){
+      var card = document.createElement('div');
+      card.className = 'card';
+      card.dataset.index = idx;
+      card.dataset.symbol = symbol;
+      card.innerHTML =
+        '<div class="card-inner">' +
+          '<div class="card-face card-back">' + backSVG() + '</div>' +
+          '<div class="card-face card-front">' + symbol + '</div>' +
+        '</div>';
+      card.addEventListener('click', onCardClick);
+      board.appendChild(card);
+      state.cards.push(card);
+    });
+  }
+
+  function onCardClick(e){
+    var card = e.currentTarget;
+    if (state.lock || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+
+    card.classList.add('flipped');
+
+    if (!state.firstPick){
+      state.firstPick = card;
+      return;
+    }
+
+    state.secondPick = card;
+    state.lock = true;
+    state.moves++;
+    movesTag.textContent = state.moves + (state.moves === 1 ? " move" : " moves");
+
+    var isMatch = state.firstPick.dataset.symbol === state.secondPick.dataset.symbol;
+
+    if (isMatch){
+      state.firstPick.classList.add('matched');
+      state.secondPick.classList.add('matched');
+      state.matches++;
+      resetPicks();
+      if (state.matches === SYMBOLS.length){
+        setTimeout(finishGame, 350);
+      }
+    } else {
+      setTimeout(function(){
+        state.firstPick.classList.remove('flipped');
+        state.secondPick.classList.remove('flipped');
+        resetPicks();
+      }, 700);
+    }
+  }
+
+  function resetPicks(){
+    state.firstPick = null;
+    state.secondPick = null;
+    state.lock = false;
+  }
+
+  function formatTime(totalSeconds){
+    var m = Math.floor(totalSeconds / 60);
+    var s = totalSeconds % 60;
+    return m + ":" + (s < 10 ? "0" : "") + s;
+  }
+
+  function startTimer(){
+    state.startTime = Date.now();
+    timerTag.textContent = "0:00";
+    state.timerInterval = setInterval(function(){
+      var elapsed = Math.floor((Date.now() - state.startTime) / 1000);
+      timerTag.textContent = formatTime(elapsed);
+    }, 250);
+  }
+
+  function stopTimer(){
+    clearInterval(state.timerInterval);
+    return Math.floor((Date.now() - state.startTime) / 1000);
+  }
+
+  function finishGame(){
+    var elapsed = stopTimer();
+    winTime.textContent = formatTime(elapsed);
+    winMoves.textContent = state.moves;
+    winOverlay.classList.remove('hidden');
+  }
+
+  function runCountdown(cb){
+    countdownOverlay.classList.remove('hidden');
+    var n = 3;
+    countdownNum.textContent = n;
+    var iv = setInterval(function(){
+      n--;
+      if (n > 0){
+        countdownNum.textContent = n;
+      } else if (n === 0){
+        countdownNum.textContent = "GO!";
+      } else {
+        clearInterval(iv);
+        countdownOverlay.classList.add('hidden');
+        cb();
+      }
+    }, 700);
+  }
+
+  function beginGame(code){
+    codeTag.textContent = code.trim().toUpperCase() || "HARVEST";
+    landing.classList.add('hidden');
+    gameScreen.classList.remove('hidden');
+    winOverlay.classList.add('hidden');
+    buildBoard(code);
+    runCountdown(startTimer);
+  }
+
+  document.getElementById('startBtn').addEventListener('click', function(){
+    var code = codeInput.value || "HARVEST";
+    beginGame(code);
+  });
+
+  codeInput.addEventListener('keydown', function(e){
+    if (e.key === 'Enter') document.getElementById('startBtn').click();
+  });
+
+  document.getElementById('backBtn').addEventListener('click', function(){
+    clearInterval(state.timerInterval);
+    gameScreen.classList.add('hidden');
+    landing.classList.remove('hidden');
+  });
+
+  document.getElementById('playAgainBtn').addEventListener('click', function(){
+    winOverlay.classList.add('hidden');
+    beginGame(codeInput.value || "HARVEST");
+  });
+
+  document.getElementById('newCodeBtn').addEventListener('click', function(){
+    winOverlay.classList.add('hidden');
+    gameScreen.classList.add('hidden');
+    landing.classList.remove('hidden');
+  });
+})();
+</script>
+</body>
+</html>
